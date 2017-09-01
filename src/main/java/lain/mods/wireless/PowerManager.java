@@ -43,7 +43,7 @@ public class PowerManager
             if (c != null && c.canReceive() && c.getMaxEnergyStored() > c.getEnergyStored())
                 return true;
             return false;
-        }).map(s -> s.getCapability(CapabilityEnergy.ENERGY, null)).forEach(cStack -> {
+        }).map(s -> s.getCapability(CapabilityEnergy.ENERGY, null)).forEachOrdered(cStack -> {
             int needed = cStack.getMaxEnergyStored() - cStack.getEnergyStored();
             int available = chargers.stream().mapToInt(c -> c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(needed, true)).sum();
             int drain = Math.max(available / chargers.size(), 1);
