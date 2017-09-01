@@ -99,7 +99,8 @@ public class PowerManager
 
     public void updatePlayer(EntityPlayerMP player)
     {
-        doCharge(player, getChargersInRange(player));
+        if (player.isEntityAlive())
+            doCharge(player, getChargersInRange(player));
     }
 
 }
