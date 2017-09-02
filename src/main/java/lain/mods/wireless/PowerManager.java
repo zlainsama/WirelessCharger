@@ -22,7 +22,8 @@ public class PowerManager
 
     public void addCharger(TileEntity tileentity)
     {
-        loadedChargers.add(tileentity);
+        if (tileentity.hasCapability(CapabilityEnergy.ENERGY, null))
+            loadedChargers.add(tileentity);
     }
 
     public void clear()
