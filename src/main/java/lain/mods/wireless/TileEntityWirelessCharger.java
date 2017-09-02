@@ -70,7 +70,7 @@ public class TileEntityWirelessCharger extends TileEntity
 
     EnergyStorage createEnergyStorage()
     {
-        return new EnergyStorage(this).setMaxEnergyStored(ConfigOptions.TransferRate * 1000).setMaxReceive(Integer.MAX_VALUE).setMaxExtract(ConfigOptions.TransferRate).setEnergyStored(0);
+        return new EnergyStorage(this).setMaxEnergyStored(ConfigOptions.TransferRate * 100).setMaxReceive(Integer.MAX_VALUE).setMaxExtract(ConfigOptions.TransferRate).setEnergyStored(0);
     }
 
     @SuppressWarnings("unchecked")
