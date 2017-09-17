@@ -41,14 +41,14 @@ public class PowerManager
 
         IntStream.range(0, player.inventory.getSizeInventory()).mapToObj(player.inventory::getStackInSlot).filter(s -> {
             IEnergyStorage c = s.getCapability(CapabilityEnergy.ENERGY, null);
-            if (c != null && c.canReceive() && c.getMaxEnergyStored() > c.getEnergyStored())
+            if (c != null && c.canReceive() && c.getMaxEnergyStored() > c.getEnergyStored() && !ConfigOptions.BlacklistedItems.contains(s.getItem().getRegistryName()))
                 return true;
             return false;
         }).map(s -> s.getCapability(CapabilityEnergy.ENERGY, null)).forEachOrdered(cStack -> {
             int needed = cStack.getMaxEnergyStored() - cStack.getEnergyStored();
-            int available = chargers.stream().mapToInt(c -> c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(needed, true)).sum();
+            int available = chargers.stream().filter(c -> !c.isInvalid()).mapToInt(c -> c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(needed, true)).sum();
             int drain = Math.max(Math.min(available / chargers.size(), cStack.receiveEnergy(needed, true) / chargers.size()), 1);
-            chargers.forEach(c -> cStack.receiveEnergy(c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(drain, false), false));
+            chargers.stream().filter(c -> !c.isInvalid()).forEach(c -> cStack.receiveEnergy(c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(drain, false), false));
         });
     }
 
