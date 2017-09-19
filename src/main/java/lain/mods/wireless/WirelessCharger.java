@@ -6,7 +6,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 
-@Mod(modid = WirelessCharger.MODID, useMetadata = true, acceptedMinecraftVersions = "[1.12],[1.12.1]")
+@Mod(modid = WirelessCharger.MODID, useMetadata = true, acceptedMinecraftVersions = "[1.12, 1.13)", certificateFingerprint = "aaaf83332a11df02406e9f266b1b65c1306f0f76")
 public class WirelessCharger
 {
 
