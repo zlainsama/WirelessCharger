@@ -20,6 +20,7 @@ public class ConfigOptions
         TransferRate = config.getInt("TransferRate", Configuration.CATEGORY_GENERAL, 30000, 1, 1000000000, "Energy transfer rate per item.");
         Capacity = config.getInt("Capacity", Configuration.CATEGORY_GENERAL, 3000000, 1, 1000000000, "Max energy can be stored.");
         BlacklistedItems = Collections.unmodifiableSet(Arrays.stream(config.getStringList("BlacklistedItems", Configuration.CATEGORY_GENERAL, new String[] { "thermalexpansion:cell" }, "These items will not be charged.")).collect(toResourceLocations()));
+        UpgradeItem = new ResourceLocation(config.getString("UpgradeItem", Configuration.CATEGORY_GENERAL, "minecraft:nether_star", "The item required to upgrade a WirelessCharger, set to minecraft:air if you want to disable it, existing ones will not change"));
 
         if (config.hasChanged())
             config.save();
@@ -37,5 +38,6 @@ public class ConfigOptions
     public static int TransferRate = 30000;
     public static int Capacity = 3000000;
     public static Set<ResourceLocation> BlacklistedItems = Collections.unmodifiableSet(Arrays.stream(new String[] { "thermalexpansion:cell" }).collect(toResourceLocations()));
+    public static ResourceLocation UpgradeItem;
 
 }

@@ -1,6 +1,8 @@
 package lain.mods.wireless;
 
+import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -66,7 +68,11 @@ public class TileEntityWirelessCharger extends TileEntity
 
     }
 
-    EnergyStorage energy;
+    EnergyStorage energy = createEnergyStorage();
+    boolean upgraded = false;
+    UUID targetUser = new UUID(0, 0);
+    ItemStack upgradeItem = ItemStack.EMPTY;
+    boolean disabled = false;
 
     EnergyStorage createEnergyStorage()
     {
@@ -90,6 +96,16 @@ public class TileEntityWirelessCharger extends TileEntity
         return energy;
     }
 
+    public UUID getTargetUser()
+    {
+        return targetUser;
+    }
+
+    public ItemStack getUpgradeItem()
+    {
+        return upgradeItem;
+    }
+
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing)
     {
@@ -98,12 +114,27 @@ public class TileEntityWirelessCharger extends TileEntity
         return super.hasCapability(capability, facing);
     }
 
+    public boolean hasUpgradeItem()
+    {
+        return !upgradeItem.isEmpty();
+    }
+
     @Override
     public void invalidate()
     {
         super.invalidate();
         if (!getWorld().isRemote)
             EventHandler.manager.removeCharger(this);
+    }
+
+    public boolean isDisabled()
+    {
+        return disabled;
+    }
+
+    public boolean isUpgraded()
+    {
+        return upgraded;
     }
 
     @Override
@@ -127,6 +158,46 @@ public class TileEntityWirelessCharger extends TileEntity
     {
         super.readFromNBT(compound);
         getEnergyStorage().setEnergyStored(compound.getInteger("StoredEnergy"));
+        upgraded = compound.getBoolean("Upgraded");
+        targetUser = compound.getUniqueId("TargetUser");
+        upgradeItem = compound.hasKey("UpgradeItem", 10) ? new ItemStack(compound.getCompoundTag("UpgradeItem")) : ItemStack.EMPTY;
+        disabled = compound.getBoolean("Disabled");
+    }
+
+    public void setDisabled(boolean disabled)
+    {
+        if (this.disabled == disabled)
+            return;
+
+        this.disabled = disabled;
+        markDirty();
+    }
+
+    public void setTargetUser(UUID target)
+    {
+        if (this.targetUser == target || (this.targetUser != null && this.targetUser.equals(target)))
+            return;
+
+        this.targetUser = target;
+        markDirty();
+    }
+
+    public void setUpgraded(boolean upgraded)
+    {
+        if (this.upgraded == upgraded)
+            return;
+
+        this.upgraded = upgraded;
+        markDirty();
+    }
+
+    public void setUpgradeItem(ItemStack upgradeItem)
+    {
+        if (this.upgradeItem == upgradeItem || ItemStack.areItemStacksEqual(this.upgradeItem, upgradeItem))
+            return;
+
+        this.upgradeItem = upgradeItem;
+        markDirty();
     }
 
     @Override
@@ -134,6 +205,11 @@ public class TileEntityWirelessCharger extends TileEntity
     {
         super.writeToNBT(compound);
         compound.setInteger("StoredEnergy", energy.getEnergyStored());
+        compound.setBoolean("Upgraded", upgraded);
+        compound.setUniqueId("TargetUser", targetUser);
+        if (!upgradeItem.isEmpty())
+            compound.setTag("UpgradeItem", upgradeItem.writeToNBT(new NBTTagCompound()));
+        compound.setBoolean("Disabled", disabled);
         return compound;
     }
 

@@ -6,14 +6,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PowerManager
 {
+
+    private static final Predicate<? super TileEntity> FILTER = tile -> {
+        if (tile.isInvalid())
+            return false;
+        if (tile instanceof TileEntityWirelessCharger)
+            return !((TileEntityWirelessCharger) tile).isDisabled();
+        return true;
+    };
 
     int scanDelay = 0;
 
@@ -46,9 +56,9 @@ public class PowerManager
             return false;
         }).map(s -> s.getCapability(CapabilityEnergy.ENERGY, null)).forEachOrdered(cStack -> {
             int needed = cStack.getMaxEnergyStored() - cStack.getEnergyStored();
-            int available = chargers.stream().filter(c -> !c.isInvalid()).mapToInt(c -> c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(needed, true)).sum();
+            int available = chargers.stream().filter(FILTER).mapToInt(c -> c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(needed, true)).sum();
             int drain = Math.max(Math.min(available / chargers.size(), cStack.receiveEnergy(needed, true) / chargers.size()), 1);
-            chargers.stream().filter(c -> !c.isInvalid()).forEach(c -> cStack.receiveEnergy(c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(drain, false), false));
+            chargers.stream().filter(FILTER).forEach(c -> cStack.receiveEnergy(c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(drain, false), false));
         });
     }
 
@@ -57,13 +67,36 @@ public class PowerManager
         int sqRange = ConfigOptions.Range * ConfigOptions.Range;
 
         nearbyChargers.clear();
-        getChargers().stream().filter(c -> !c.isInvalid()).forEach(c -> {
-            c.getWorld().getPlayers(EntityPlayerMP.class, p -> p.getDistanceSqToCenter(c.getPos()) <= sqRange).forEach(p -> {
-                List<TileEntity> l = nearbyChargers.get(p);
-                if (l == null)
-                    nearbyChargers.put(p, l = new ArrayList<TileEntity>());
-                l.add(c);
-            });
+        getChargers().stream().filter(FILTER).forEach(c -> {
+            boolean handled = false;
+
+            if (c instanceof TileEntityWirelessCharger)
+            {
+                TileEntityWirelessCharger t = (TileEntityWirelessCharger) c;
+                if (t.isUpgraded())
+                {
+                    handled = true;
+
+                    EntityPlayerMP p = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(t.getTargetUser());
+                    if (p != null)
+                    {
+                        List<TileEntity> l = nearbyChargers.get(p);
+                        if (l == null)
+                            nearbyChargers.put(p, l = new ArrayList<TileEntity>());
+                        l.add(c);
+                    }
+                }
+            }
+
+            if (!handled)
+            {
+                c.getWorld().getPlayers(EntityPlayerMP.class, p -> p.getDistanceSqToCenter(c.getPos()) <= sqRange).forEach(p -> {
+                    List<TileEntity> l = nearbyChargers.get(p);
+                    if (l == null)
+                        nearbyChargers.put(p, l = new ArrayList<TileEntity>());
+                    l.add(c);
+                });
+            }
         });
     }
 
