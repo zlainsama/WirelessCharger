@@ -1,10 +1,10 @@
 package lain.mods.wireless;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -27,8 +27,8 @@ public class PowerManager
 
     int scanDelay = 0;
 
-    final List<TileEntity> loadedChargers = new ArrayList<TileEntity>();
-    final Map<EntityPlayerMP, List<TileEntity>> nearbyChargers = new WeakHashMap<EntityPlayerMP, List<TileEntity>>();
+    final Set<TileEntity> loadedChargers = new HashSet<TileEntity>();
+    final Map<EntityPlayerMP, Set<TileEntity>> nearbyChargers = new WeakHashMap<EntityPlayerMP, Set<TileEntity>>();
 
     public void addCharger(TileEntity tileentity)
     {
@@ -80,10 +80,10 @@ public class PowerManager
                     EntityPlayerMP p = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(t.getTargetUser());
                     if (p != null)
                     {
-                        List<TileEntity> l = nearbyChargers.get(p);
-                        if (l == null)
-                            nearbyChargers.put(p, l = new ArrayList<TileEntity>());
-                        l.add(c);
+                        Set<TileEntity> s = nearbyChargers.get(p);
+                        if (s == null)
+                            nearbyChargers.put(p, s = new HashSet<TileEntity>());
+                        s.add(c);
                     }
                 }
             }
@@ -91,10 +91,10 @@ public class PowerManager
             if (!handled)
             {
                 c.getWorld().getPlayers(EntityPlayerMP.class, p -> p.getDistanceSqToCenter(c.getPos()) <= sqRange).forEach(p -> {
-                    List<TileEntity> l = nearbyChargers.get(p);
-                    if (l == null)
-                        nearbyChargers.put(p, l = new ArrayList<TileEntity>());
-                    l.add(c);
+                    Set<TileEntity> s = nearbyChargers.get(p);
+                    if (s == null)
+                        nearbyChargers.put(p, s = new HashSet<TileEntity>());
+                    s.add(c);
                 });
             }
         });
@@ -102,13 +102,13 @@ public class PowerManager
 
     public Collection<TileEntity> getChargers()
     {
-        return Collections.unmodifiableList(loadedChargers);
+        return Collections.unmodifiableSet(loadedChargers);
     }
 
     public Collection<TileEntity> getChargersInRange(EntityPlayerMP player)
     {
         if (nearbyChargers.containsKey(player))
-            return Collections.unmodifiableList(nearbyChargers.get(player));
+            return Collections.unmodifiableSet(nearbyChargers.get(player));
         return Collections.emptyList();
     }
 
