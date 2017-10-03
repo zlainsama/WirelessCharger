@@ -79,13 +79,12 @@ public class TileEntityWirelessCharger extends TileEntity
         return new EnergyStorage(this).setMaxEnergyStored(ConfigOptions.Capacity).setMaxReceive(Integer.MAX_VALUE).setMaxExtract(ConfigOptions.TransferRate).setEnergyStored(0);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     @Nullable
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing)
     {
         if (capability == CapabilityEnergy.ENERGY)
-            return (T) getEnergyStorage();
+            return CapabilityEnergy.ENERGY.cast(getEnergyStorage());
         return super.getCapability(capability, facing);
     }
 
@@ -198,6 +197,14 @@ public class TileEntityWirelessCharger extends TileEntity
 
         this.upgradeItem = upgradeItem;
         markDirty();
+    }
+
+    @Override
+    public void validate()
+    {
+        super.validate();
+        if (!getWorld().isRemote)
+            EventHandler.manager.addCharger(this);
     }
 
     @Override
