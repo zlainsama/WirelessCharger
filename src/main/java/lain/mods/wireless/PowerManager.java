@@ -50,10 +50,10 @@ public class PowerManager
             return;
 
         IntStream.range(0, player.inventory.getSizeInventory()).mapToObj(player.inventory::getStackInSlot).filter(s -> {
+            if (ConfigOptions.BlacklistedItems.contains(s.getItem().getRegistryName()) || !s.hasCapability(CapabilityEnergy.ENERGY, null))
+                return false;
             IEnergyStorage c = s.getCapability(CapabilityEnergy.ENERGY, null);
-            if (c != null && c.canReceive() && c.getMaxEnergyStored() > c.getEnergyStored() && !ConfigOptions.BlacklistedItems.contains(s.getItem().getRegistryName()))
-                return true;
-            return false;
+            return c != null && c.canReceive() && c.getMaxEnergyStored() > c.getEnergyStored();
         }).map(s -> s.getCapability(CapabilityEnergy.ENERGY, null)).forEachOrdered(cStack -> {
             int needed = cStack.getMaxEnergyStored() - cStack.getEnergyStored();
             int available = chargers.stream().filter(FILTER).mapToInt(c -> c.getCapability(CapabilityEnergy.ENERGY, null).extractEnergy(needed, true)).sum();
