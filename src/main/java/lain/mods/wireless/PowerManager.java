@@ -8,14 +8,39 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
+import baubles.api.BaublesApi;
+import baubles.api.cap.IBaublesItemHandler;
 
 public class PowerManager
 {
+
+    private static final Stream<ItemStack> sInv(EntityPlayer player)
+    {
+        Stream<ItemStack> res = IntStream.range(0, player.inventory.getSizeInventory()).mapToObj(player.inventory::getStackInSlot);
+
+        if (fBaubles)
+        {
+            try
+            {
+                IBaublesItemHandler bih = BaublesApi.getBaublesHandler(player);
+                res = Stream.concat(res, IntStream.range(0, bih.getSlots()).mapToObj(bih::getStackInSlot));
+            }
+            catch (Throwable ignored)
+            {
+            }
+        }
+
+        return res;
+    }
 
     private static final Predicate<? super TileEntity> FILTER = tile -> {
         if (tile.isInvalid())
@@ -24,6 +49,8 @@ public class PowerManager
             return !((TileEntityWirelessCharger) tile).isDisabled();
         return true;
     };
+
+    private static final boolean fBaubles = Loader.isModLoaded("baubles");
 
     int scanDelay = 0;
 
@@ -49,8 +76,8 @@ public class PowerManager
         if (chargers.isEmpty())
             return;
 
-        IntStream.range(0, player.inventory.getSizeInventory()).mapToObj(player.inventory::getStackInSlot).filter(s -> {
-            if (ConfigOptions.BlacklistedItems.contains(s.getItem().getRegistryName()) || !s.hasCapability(CapabilityEnergy.ENERGY, null))
+        sInv(player).filter(s -> {
+            if (s.isEmpty() || ConfigOptions.BlacklistedItems.contains(s.getItem().getRegistryName()) || !s.hasCapability(CapabilityEnergy.ENERGY, null))
                 return false;
             IEnergyStorage c = s.getCapability(CapabilityEnergy.ENERGY, null);
             return c != null && c.canReceive() && c.getMaxEnergyStored() > c.getEnergyStored();
