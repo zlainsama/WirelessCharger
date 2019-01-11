@@ -12,6 +12,12 @@ import net.minecraftforge.common.config.Configuration;
 public class ConfigOptions
 {
 
+    public static int Range = 40;
+    public static int TransferRate = 30000;
+    public static int Capacity = 3000000;
+    public static Set<ResourceLocation> BlacklistedItems = Collections.unmodifiableSet(Arrays.stream(new String[] { "thermalexpansion:cell" }).collect(toResourceLocations()));
+    public static ResourceLocation UpgradeItem;
+
     public static void loadConfig(File file)
     {
         Configuration config = new Configuration(file);
@@ -33,11 +39,5 @@ public class ConfigOptions
             return r1;
         });
     }
-
-    public static int Range = 40;
-    public static int TransferRate = 30000;
-    public static int Capacity = 3000000;
-    public static Set<ResourceLocation> BlacklistedItems = Collections.unmodifiableSet(Arrays.stream(new String[] { "thermalexpansion:cell" }).collect(toResourceLocations()));
-    public static ResourceLocation UpgradeItem;
 
 }

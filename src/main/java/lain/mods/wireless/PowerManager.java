@@ -9,6 +9,8 @@ import java.util.WeakHashMap;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import baubles.api.BaublesApi;
+import baubles.api.cap.IBaublesItemHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -17,11 +19,19 @@ import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
-import baubles.api.BaublesApi;
-import baubles.api.cap.IBaublesItemHandler;
 
 public class PowerManager
 {
+
+    private static final Predicate<? super TileEntity> FILTER = tile -> {
+        if (tile.isInvalid())
+            return false;
+        if (tile instanceof TileEntityWirelessCharger)
+            return !((TileEntityWirelessCharger) tile).isDisabled();
+        return true;
+    };
+
+    private static final boolean fBaubles = Loader.isModLoaded("baubles");
 
     private static final Stream<ItemStack> sInv(EntityPlayer player)
     {
@@ -41,16 +51,6 @@ public class PowerManager
 
         return res;
     }
-
-    private static final Predicate<? super TileEntity> FILTER = tile -> {
-        if (tile.isInvalid())
-            return false;
-        if (tile instanceof TileEntityWirelessCharger)
-            return !((TileEntityWirelessCharger) tile).isDisabled();
-        return true;
-    };
-
-    private static final boolean fBaubles = Loader.isModLoaded("baubles");
 
     int scanDelay = 0;
 

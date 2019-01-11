@@ -13,6 +13,9 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class ModBlocks
 {
 
+    @ObjectHolder("wirelesscharger")
+    public static final BlockWirelessCharger blockWirelessCharger = null;
+
     @SideOnly(Side.CLIENT)
     public static void initModels()
     {
@@ -23,8 +26,5 @@ public class ModBlocks
     {
         registry.register(new BlockWirelessCharger());
     }
-
-    @ObjectHolder("wirelesscharger")
-    public static final BlockWirelessCharger blockWirelessCharger = null;
 
 }

@@ -20,6 +20,8 @@ import net.minecraftforge.fml.relauncher.Side;
 public class EventHandler
 {
 
+    public static final PowerManager manager = new PowerManager();
+
     public static void init(FMLInitializationEvent event)
     {
     }
@@ -74,7 +76,5 @@ public class EventHandler
         ModBlocks.initModels();
         ModItems.initModels();
     }
-
-    public static final PowerManager manager = new PowerManager();
 
 }
